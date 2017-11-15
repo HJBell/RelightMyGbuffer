@@ -10,5 +10,10 @@ out vec3 reflected_light;
 
 void main(void)
 {
-    reflected_light = vec3(1.0, 0.33, 0.0);
+	vec3 normal = texture(sampler_world_normal, gl_FragCoord.xy).xyz * 2.0 - 1.0;
+	normal = normalize(normal);
+
+	vec3 colour = vec3(0.0);
+	colour += max(0.0, dot(light_direction, normal));
+	reflected_light = clamp(colour, 0.0, 1.0);
 }

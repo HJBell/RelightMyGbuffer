@@ -209,6 +209,12 @@ void MyView::windowViewDidReset(tygra::Window * window,
 
 	glBindTexture(GL_TEXTURE_RECTANGLE, gbuffer_depth_tex_);
 	glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_DEPTH24_STENCIL8, width, height, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, gbuffer_images[2]->pixelData());
+
+	glBindTexture(GL_TEXTURE_RECTANGLE, gbuffer_position_tex_);
+	glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, gbuffer_images[0]->pixelData());
+
+	glBindTexture(GL_TEXTURE_RECTANGLE, gbuffer_normal_tex_);
+	glTexImage2D(GL_TEXTURE_RECTANGLE, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, gbuffer_images[1]->pixelData());
 	//-----------------------------------------------------------------
 
     GLenum framebuffer_status = 0;
@@ -291,6 +297,15 @@ void MyView::windowViewRender(tygra::Window * window)
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 
 	glUseProgram(global_light_prog_);
+
+	glUniform1i(glGetUniformLocation(global_light_prog_, "sampler_world_position"), 0);
+	glUniform1i(glGetUniformLocation(global_light_prog_, "sampler_world_normal"), 1);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_RECTANGLE, gbuffer_position_tex_);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_RECTANGLE, gbuffer_normal_tex_);
+	glUniform3fv(glGetUniformLocation(global_light_prog_, "light_direction"), 1, glm::value_ptr(global_light_direction));
+
 	glBindVertexArray(light_quad_mesh_.vao);
 	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	glBindVertexArray(0);
